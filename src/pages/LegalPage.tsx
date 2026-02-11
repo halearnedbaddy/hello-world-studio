@@ -20,7 +20,7 @@ export function LegalPage() {
                             <li><a href="#terms" className="text-[#5d2ba3] hover:underline">1. Terms of Service</a></li>
                             <li><a href="#privacy" className="text-[#5d2ba3] hover:underline">2. Privacy Policy</a></li>
                             <li><a href="#security" className="text-[#5d2ba3] hover:underline">3. Security Policy</a></li>
-                            <li><a href="#escrow" className="text-[#5d2ba3] hover:underline">4. Escrow & Payment Terms</a></li>
+                            <li><a href="#payment" className="text-[#5d2ba3] hover:underline">4. Payment Terms</a></li>
                             <li><a href="#disputes" className="text-[#5d2ba3] hover:underline">5. Dispute Resolution</a></li>
                             <li><a href="#contact" className="text-[#5d2ba3] hover:underline">6. Contact Us</a></li>
                         </ul>
@@ -62,13 +62,13 @@ export function LegalPage() {
                                 </ul>
 
                                 <h3 className="font-semibold text-gray-800">1.5 Account Suspension & Termination</h3>
-                                <p>PayLoom reserves the right to suspend or permanently terminate any account that violates these terms, is involved in suspicious activity, or poses a risk to the platform's integrity. Funds held in escrow during suspension will be handled per our Dispute Resolution process.</p>
+                                <p>PayLoom reserves the right to suspend or permanently terminate any account that violates these terms, is involved in suspicious activity, or poses a risk to the platform's integrity. Any pending payments during suspension will be handled per our Dispute Resolution process.</p>
 
                                 <h3 className="font-semibold text-gray-800">1.6 Platform Fees</h3>
-                                <p>PayLoom charges a platform fee on each completed transaction. The fee is deducted from the seller's payout at the time of escrow release. Current fee rates are displayed during transaction creation and may be updated with prior notice.</p>
+                                <p>PayLoom charges a platform fee on each completed transaction. The fee is deducted from the seller's payout at the time of payment processing. Current fee rates are displayed during transaction creation and may be updated with prior notice.</p>
 
                                 <h3 className="font-semibold text-gray-800">1.7 Limitation of Liability</h3>
-                                <p>PayLoom acts solely as an escrow intermediary. We are not responsible for the quality, legality, or delivery of goods or services exchanged between buyers and sellers. Our liability is limited to the platform fees collected.</p>
+                                <p>PayLoom acts solely as a payment facilitation platform. We are not responsible for the quality, legality, or delivery of goods or services exchanged between buyers and sellers. Our liability is limited to the platform fees collected.</p>
                             </div>
                         </section>
 
@@ -92,7 +92,7 @@ export function LegalPage() {
 
                                 <h3 className="font-semibold text-gray-800">2.2 How We Use Your Information</h3>
                                 <ul className="list-disc pl-6 space-y-1">
-                                    <li>To facilitate secure transactions and escrow services.</li>
+                                    <li>To facilitate secure transactions and payment processing.</li>
                                     <li>To verify identity and prevent fraud.</li>
                                     <li>To process withdrawals and payouts.</li>
                                     <li>To send transaction notifications and important updates.</li>
@@ -103,7 +103,7 @@ export function LegalPage() {
                                 <h3 className="font-semibold text-gray-800">2.3 Data Sharing</h3>
                                 <p>We do <strong>not</strong> sell your personal information to third parties. We may share data with:</p>
                                 <ul className="list-disc pl-6 space-y-1">
-                                    <li>Payment processors (Paystack, M-Pesa) to complete transactions.</li>
+                                    <li>Payment processors (M-Pesa, Airtel Money) to complete transactions.</li>
                                     <li>Law enforcement when required by court order or to prevent fraud.</li>
                                     <li>Service providers who assist in operating the platform under strict confidentiality agreements.</li>
                                 </ul>
@@ -145,8 +145,8 @@ export function LegalPage() {
                                     <li>Session tokens expire after periods of inactivity.</li>
                                 </ul>
 
-                                <h3 className="font-semibold text-gray-800">3.3 Escrow Fund Protection</h3>
-                                <p>All escrowed funds are held in segregated trust accounts, separate from PayLoom's operational funds. Funds are only released upon buyer confirmation of delivery or through our dispute resolution process.</p>
+                                <h3 className="font-semibold text-gray-800">3.3 Payment Protection</h3>
+                                <p>All payments processed through PayLoom are handled via licensed payment partners. Funds are routed securely and transparently, with real-time transaction records available to both parties.</p>
 
                                 <h3 className="font-semibold text-gray-800">3.4 Fraud Prevention</h3>
                                 <ul className="list-disc pl-6 space-y-1">
@@ -161,23 +161,23 @@ export function LegalPage() {
                             </div>
                         </section>
 
-                        {/* Escrow & Payment Terms */}
-                        <section id="escrow">
+                        {/* Payment Terms */}
+                        <section id="payment">
                             <div className="flex items-center gap-3 mb-5">
                                 <div className="w-10 h-10 bg-[#5d2ba3]/15 rounded-lg flex items-center justify-center text-[#5d2ba3]">
                                     <GlobeIcon size={22} />
                                 </div>
-                                <h2 className="text-2xl font-bold text-[#3d1a7a]">4. Escrow & Payment Terms</h2>
+                                <h2 className="text-2xl font-bold text-[#3d1a7a]">4. Payment Terms</h2>
                             </div>
 
                             <div className="space-y-4 text-gray-600 leading-relaxed text-[15px]">
-                                <h3 className="font-semibold text-gray-800">4.1 How Escrow Works</h3>
+                                <h3 className="font-semibold text-gray-800">4.1 How Payments Work</h3>
                                 <ol className="list-decimal pl-6 space-y-1">
                                     <li>The seller creates a payment link or lists a product on their storefront.</li>
-                                    <li>The buyer makes payment, which is held securely in escrow.</li>
-                                    <li>The seller ships the item and provides tracking/delivery proof.</li>
+                                    <li>The buyer makes payment via their preferred payment method.</li>
+                                    <li>The seller fulfills the order and provides tracking or delivery proof.</li>
                                     <li>The buyer confirms receipt and satisfaction.</li>
-                                    <li>Funds are released to the seller's wallet, minus the platform fee.</li>
+                                    <li>Funds are released to the seller's account, minus the platform fee.</li>
                                 </ol>
 
                                 <h3 className="font-semibold text-gray-800">4.2 Auto-Release</h3>
@@ -188,11 +188,11 @@ export function LegalPage() {
                                     <li><strong>M-Pesa:</strong> Payments and withdrawals via Safaricom M-Pesa.</li>
                                     <li><strong>Airtel Money:</strong> Payments and withdrawals via Airtel Money.</li>
                                     <li><strong>Bank Transfer:</strong> Withdrawals to supported Kenyan and international banks.</li>
-                                    <li><strong>Card Payments:</strong> Visa and Mastercard via Paystack.</li>
+                                    <li><strong>Card Payments:</strong> Visa and Mastercard.</li>
                                 </ul>
 
                                 <h3 className="font-semibold text-gray-800">4.4 Withdrawals</h3>
-                                <p>Sellers can withdraw available funds from their PayLoom wallet to M-Pesa, Airtel Money, or a bank account. Withdrawal processing times vary: M-Pesa and Airtel Money withdrawals are typically instant; bank transfers may take 1–3 business days. A small processing fee may apply.</p>
+                                <p>Sellers can withdraw available funds from their PayLoom account to M-Pesa, Airtel Money, or a bank account. Withdrawal processing times vary: M-Pesa and Airtel Money withdrawals are typically instant; bank transfers may take 1–3 business days. A small processing fee may apply.</p>
 
                                 <h3 className="font-semibold text-gray-800">4.5 Refunds</h3>
                                 <p>Refunds are issued to the buyer's original payment method when a dispute is resolved in the buyer's favor, when the seller cancels an order, or when an order expires without shipment. Refund processing takes 5–10 business days.</p>
