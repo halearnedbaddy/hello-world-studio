@@ -1,1 +1,19 @@
 project_id = "krkybhborwvcbjzjcghw"
+
+[functions.charge]
+verify_jwt = false
+
+[functions.mpesa-callback]
+verify_jwt = false
+
+[functions.hold]
+verify_jwt = false
+
+[functions.release]
+verify_jwt = false
+
+[functions.disburse]
+verify_jwt = false
+
+[functions.generate-api-key]
+verify_jwt = false

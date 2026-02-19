@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
 import { supabaseAdmin, validateApiKey } from "../_shared/supabase.ts";
+import { initiateSTKPush } from "../_shared/daraja.ts";
+import { dispatchWebhook } from "../_shared/webhooks.ts";
 
 // Fee calculation: 2.5% + KSh 20 (2000 cents)
 const FEE_PERCENTAGE = 0.025;
@@ -13,47 +15,34 @@ function calculateFee(amount: number): number {
 // Detect payment provider from phone number prefix
 function detectProvider(phone: string): "MPESA" | "AIRTEL" | null {
   const cleanPhone = phone.replace(/\D/g, "");
-  
-  // Safaricom (M-Pesa) prefixes
   const mpesaPrefixes = ["2547", "2541", "01", "07"];
-  // Airtel prefixes
   const airtelPrefixes = ["2548", "2550", "08", "050"];
-  
+
   for (const prefix of mpesaPrefixes) {
     if (cleanPhone.startsWith(prefix)) return "MPESA";
   }
-  
   for (const prefix of airtelPrefixes) {
     if (cleanPhone.startsWith(prefix)) return "AIRTEL";
   }
-  
-  // Default to M-Pesa for Kenyan numbers
   if (cleanPhone.startsWith("254") || cleanPhone.startsWith("0")) {
     return "MPESA";
   }
-  
   return null;
 }
 
 // Format phone number to international format
 function formatPhone(phone: string): string {
   let cleaned = phone.replace(/\D/g, "");
-  
-  // Convert local format to international
   if (cleaned.startsWith("0")) {
     cleaned = "254" + cleaned.slice(1);
   }
-  
-  // Ensure it starts with country code
   if (!cleaned.startsWith("254")) {
     cleaned = "254" + cleaned;
   }
-  
   return cleaned;
 }
 
 serve(async (req) => {
-  // Handle CORS
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
@@ -62,47 +51,40 @@ serve(async (req) => {
   }
 
   try {
-    // Get API key from header
-    const apiKey = req.headers.get("x-api-key") || req.headers.get("authorization")?.replace("Bearer ", "");
-    
+    const apiKey =
+      req.headers.get("x-api-key") ||
+      req.headers.get("authorization")?.replace("Bearer ", "");
+
     const { account, error: authError, mode } = await validateApiKey(apiKey || "");
     if (authError || !account) {
       return errorResponse(authError || "Invalid API key", 401);
     }
 
-    // Parse request body
     const body = await req.json();
     const { amount, phone, currency = "KES", description, external_ref } = body;
 
-    // Validate required fields
     if (!amount || typeof amount !== "number" || amount < 100) {
       return errorResponse("Amount must be at least 100 cents (KSh 1)", 400);
     }
-
     if (!phone) {
       return errorResponse("Phone number is required", 400);
     }
 
-    // Format and validate phone
     const formattedPhone = formatPhone(phone);
     if (formattedPhone.length < 12) {
       return errorResponse("Invalid phone number format", 400);
     }
 
-    // Detect payment provider
     const paymentMethod = detectProvider(formattedPhone);
     if (!paymentMethod) {
       return errorResponse("Unsupported phone number. Use Safaricom or Airtel numbers.", 400);
     }
 
-    // Calculate fee
     const feeAmount = calculateFee(amount);
-
-    // Generate transaction ID
     const transactionId = `txn_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
 
     // Create transaction record
-const { data: transaction, error: txError } = await supabaseAdmin
+    const { data: transaction, error: txError } = await supabaseAdmin
       .from("transactions")
       .insert({
         id: transactionId,
@@ -129,14 +111,12 @@ const { data: transaction, error: txError } = await supabaseAdmin
       return errorResponse("Failed to create transaction", 500);
     }
 
-    // In SANDBOX mode, simulate STK push
+    // ===== SANDBOX MODE =====
     if (mode === "sandbox") {
       // Simulate async callback after 3 seconds
       setTimeout(async () => {
-        // 80% success rate in sandbox
-        const success = Math.random() > 0.2;
-        
-await supabaseAdmin
+        const success = Math.random() > 0.2; // 80% success rate
+        await supabaseAdmin
           .from("transactions")
           .update({
             status: success ? "SUCCESS" : "FAILED",
@@ -149,7 +129,19 @@ await supabaseAdmin
           })
           .eq("id", transactionId);
 
-        // TODO: Fire webhook if configured
+        // Fire webhook
+        await dispatchWebhook({
+          event_type: success ? "charge.success" : "charge.failed",
+          account_id: account.id,
+          data: {
+            transaction_id: transactionId,
+            amount,
+            currency,
+            phone: formattedPhone,
+            status: success ? "SUCCESS" : "FAILED",
+            mode: "sandbox",
+          },
+        });
       }, 3000);
 
       return jsonResponse({
@@ -164,19 +156,63 @@ await supabaseAdmin
       });
     }
 
-    // In LIVE mode, initiate real STK Push
-    // TODO: Implement Daraja API integration
-    // For now, return pending status
-    return jsonResponse({
-      success: true,
-      transaction_id: transactionId,
-      status: "PENDING",
-      message: `STK Push sent to ${formattedPhone}`,
-      amount,
-      currency,
-      fee: feeAmount,
-      payment_method: paymentMethod,
-    });
+    // ===== LIVE MODE - Daraja STK Push =====
+    if (paymentMethod !== "MPESA") {
+      return errorResponse("Only M-Pesa is currently supported for live payments", 400);
+    }
+
+    try {
+      const callbackUrl =
+        Deno.env.get("DARAJA_CALLBACK_URL") ||
+        `${Deno.env.get("SUPABASE_URL")}/functions/v1/mpesa-callback`;
+
+      const stkResult = await initiateSTKPush({
+        phone: formattedPhone,
+        amount,
+        accountRef: transactionId,
+        description: description || "Payment",
+        callbackUrl,
+      });
+
+      // Store the checkout request ID for later status queries
+      await supabaseAdmin
+        .from("transactions")
+        .update({
+          metadata: {
+            ...transaction.metadata,
+            checkout_request_id: stkResult.CheckoutRequestID,
+            merchant_request_id: stkResult.MerchantRequestID,
+          },
+        })
+        .eq("id", transactionId);
+
+      return jsonResponse({
+        success: true,
+        transaction_id: transactionId,
+        status: "PENDING",
+        message: `STK Push sent to ${formattedPhone}`,
+        amount,
+        currency,
+        fee: feeAmount,
+        payment_method: paymentMethod,
+        checkout_request_id: stkResult.CheckoutRequestID,
+      });
+    } catch (darajaError) {
+      console.error("Daraja STK Push error:", darajaError);
+
+      await supabaseAdmin
+        .from("transactions")
+        .update({
+          status: "FAILED",
+          metadata: {
+            ...transaction.metadata,
+            daraja_error: String(darajaError),
+          },
+        })
+        .eq("id", transactionId);
+
+      return errorResponse(`STK Push failed: ${darajaError.message}`, 502);
+    }
   } catch (error) {
     console.error("Charge error:", error);
     return errorResponse("Internal server error", 500);
