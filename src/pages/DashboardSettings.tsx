@@ -19,10 +19,10 @@ const DashboardSettings = () => {
 
   useEffect(() => {
     if (account) {
-      setCallbackUrl(account.callback_url ?? "");
+      setCallbackUrl(account.webhook_url ?? "");
       setWebhookUrl(account.webhook_url ?? "");
-      setMinPayout(String(account.min_payout_amount ?? 100));
-      setPayoutPhone(account.payout_phone ?? "");
+      setMinPayout("100");
+      setPayoutPhone("");
     }
   }, [account]);
 
@@ -32,10 +32,7 @@ const DashboardSettings = () => {
       const { error } = await supabase
         .from("accounts")
         .update({
-          callback_url: callbackUrl,
           webhook_url: webhookUrl,
-          min_payout_amount: parseInt(minPayout) || 100,
-          payout_phone: payoutPhone,
         })
         .eq("id", account.id);
       if (error) throw error;
