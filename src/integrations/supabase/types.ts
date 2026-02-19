@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          api_key_last_four: string | null
+          business_name: string | null
+          created_at: string
+          id: string
+          live_api_key_hash: string | null
+          sandbox_api_key: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_key_last_four?: string | null
+          business_name?: string | null
+          created_at?: string
+          id?: string
+          live_api_key_hash?: string | null
+          sandbox_api_key?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_key_last_four?: string | null
+          business_name?: string | null
+          created_at?: string
+          id?: string
+          live_api_key_hash?: string | null
+          sandbox_api_key?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       admin_logs: {
         Row: {
           action: string
@@ -85,6 +127,96 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      disbursements: {
+        Row: {
+          account_id: string
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          fee_amount: number | null
+          hold_id: string | null
+          id: string
+          max_retries: number | null
+          metadata: Json | null
+          payment_method: string
+          processing_at: string | null
+          provider_ref: string | null
+          queued_at: string
+          recipient_name: string | null
+          recipient_phone: string
+          retry_count: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          fee_amount?: number | null
+          hold_id?: string | null
+          id: string
+          max_retries?: number | null
+          metadata?: Json | null
+          payment_method?: string
+          processing_at?: string | null
+          provider_ref?: string | null
+          queued_at?: string
+          recipient_name?: string | null
+          recipient_phone: string
+          retry_count?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          fee_amount?: number | null
+          hold_id?: string | null
+          id?: string
+          max_retries?: number | null
+          metadata?: Json | null
+          payment_method?: string
+          processing_at?: string | null
+          provider_ref?: string | null
+          queued_at?: string
+          recipient_name?: string | null
+          recipient_phone?: string
+          retry_count?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disbursements_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disbursements_hold_id_fkey"
+            columns: ["hold_id"]
+            isOneToOne: false
+            referencedRelation: "escrow_holds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dispute_messages: {
         Row: {
@@ -262,6 +394,81 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "escrow_deposits_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      escrow_holds: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          currency: string
+          description: string | null
+          expires_at: string | null
+          held_at: string
+          id: string
+          metadata: Json | null
+          payment_method: string | null
+          phone: string | null
+          release_method: string | null
+          released_at: string | null
+          released_to: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          held_at?: string
+          id: string
+          metadata?: Json | null
+          payment_method?: string | null
+          phone?: string | null
+          release_method?: string | null
+          released_at?: string | null
+          released_to?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          expires_at?: string | null
+          held_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_method?: string | null
+          phone?: string | null
+          release_method?: string | null
+          released_at?: string | null
+          released_to?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_holds_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_holds_transaction_id_fkey"
             columns: ["transaction_id"]
             isOneToOne: false
             referencedRelation: "transactions"
@@ -1026,6 +1233,36 @@ export type Database = {
           },
         ]
       }
+      totp_secrets: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string
+          encrypted_secret: string
+          id: string
+          is_verified: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string
+          encrypted_secret: string
+          id?: string
+          is_verified?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string
+          encrypted_secret?: string
+          id?: string
+          is_verified?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transaction_validations: {
         Row: {
           created_at: string | null
@@ -1316,6 +1553,106 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          attempt: number
+          created_at: string
+          delivered_at: string | null
+          event_type: string
+          failed_at: string | null
+          id: string
+          max_attempts: number
+          next_retry_at: string | null
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          status: string
+          webhook_endpoint_id: string
+        }
+        Insert: {
+          attempt?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type: string
+          failed_at?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          status?: string
+          webhook_endpoint_id: string
+        }
+        Update: {
+          attempt?: number
+          created_at?: string
+          delivered_at?: string | null
+          event_type?: string
+          failed_at?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          status?: string
+          webhook_endpoint_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_webhook_endpoint_id_fkey"
+            columns: ["webhook_endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          account_id: string
+          created_at: string
+          description: string | null
+          events: string[]
+          id: string
+          is_active: boolean
+          secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          description?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          secret: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          description?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          secret?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawals: {
         Row: {
